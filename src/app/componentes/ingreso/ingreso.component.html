@@ -1,0 +1,51 @@
+<div class="container-fuid">
+  <div class="row">
+    <div class="col">
+      <div class="text-center p-3">
+        <h3>Registrar Ingreso</h3>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <form [formGroup]="frmIngreso" (ngSubmit)="registrar(frmIngreso.value)">
+        <div class="row d-flex justify-content-center">
+          <div class="col-4">
+            <div class="form-floating pb-3">
+              <input type="text" class="form-control" placeholder="Indentificacion" id="txtId" formControlName="txtId">
+              <label for="txtId" class="form-label">Indentificación:</label>
+            </div>
+            <div class="form-floating pb-3">
+              <input type="text" class="form-control" placeholder="Nombre" id="txtNombre" formControlName="txtNombre">
+              <label for="txtNombre" class="form-label">Nombre completo:</label>
+            </div>
+            <div class="form-floating pb-3">
+              <select name="cbTipo" id="cbTipo" class="form-select" formControlName="cbTipo">
+                <option value="Aprendiz">Aprendiz</option>
+                <option value="Instructor">Instructor</option>
+              </select>
+              <label for="txtId" class="form-label">Tipo:</label>
+            </div>
+            <div class="form-floating pb-3">
+              <select name="cbMarca" id="cbMarca" class="form-select" formControlName="cbMarca">
+                <option value="Asus">Asus</option>
+                <option value="Lenovo">Lenovo</option>
+                <option value="Hp">Hp</option>
+                <option value="Dell">Dell</option>
+                <option value="Acer">Acer</option>
+              </select>
+              <label for="txtId" class="form-label">Marca de computador:</label>
+            </div>
+            <div class="form-floating pb-3">
+              <input type="text" class="form-control" placeholder="Serial" id="txtSerial" formControlName="txtSerial">
+              <label for="txtId" class="form-label">Serial del computador:</label>
+            </div>
+            <div class="text-center">
+              <input type="submit" value="Registar" class="btn btn-success"><i class="fa-solid fa-plus"></i>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
