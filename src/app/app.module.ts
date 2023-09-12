@@ -11,6 +11,7 @@ import {AngularFirestoreModule} from '@angular/fire/compat/firestore';
 import { AppComponent } from './app.component';
 import { IngresoComponent } from './componentes/ingreso/ingreso.component';
 import { AppRoutingModule } from './app-routing.module';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { AppRoutingModule } from './app-routing.module';
     AngularFireDatabaseModule,
     AngularFirestoreModule,
     AppRoutingModule,
-    ReactiveFormsModule, 
+    ReactiveFormsModule,
+    FontAwesomeModule, 
   ],
   providers: [],
   bootstrap: [AppComponent]

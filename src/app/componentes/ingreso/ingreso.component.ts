@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import Swal from 'sweetalert2';
+import { faPlus, faSearch, faEdit, faTrash, faEraser, faSignIn, faSignOut } from '@fortawesome/free-solid-svg-icons';
 import { IngresoService } from '../../servicios/ingreso.service';
 import { Ingreso } from 'src/app/modelos/ingreso.model';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -12,23 +13,40 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
   styleUrls: ['./ingreso.component.css'],
 })
 export class IngresoComponent implements OnInit {
-  public frmIngreso!: FormGroup;
+
+  public frmIngreso!: FormGroup; 
   public ingreso!: Ingreso;
-  public mensaje: string = '';
-  public idIngreso!: string;
-  public fechaIncial!: Date;
-  public identificacionIngreso = "";
+  public idIngreso!: string; // Variable para el id que se consulta
+  public fechaIncial!: any; // Variable para la fecha inicial que se registra
+  public estado!: any; // Variable para guardar el estado en el que se encuentra el ingreso
+  public id!: any; // Variable para guardar la identificacion que se consulta
+
+  /**
+   * Iconos importados del Fontawaitsome
+   */
+  faSearch = faSearch
+  faPlus = faPlus
+  faEdit = faEdit
+  faTrash = faTrash
+  faEraser = faEraser
+  faSignIn = faSignIn
+  faSignOut = faSignOut
 
   constructor(private IngresoService: IngresoService) { }
+
   /**
    * Registar un ingreso de una persona
    * a las instalaciones del SENA
    * @param frmIngresoValue
    */
-  registrar(frmIngresoValue: any) {
-    this.identificacionIngreso = this.frmIngreso.get('txtId')?.value;
-    if (!this.consultar(this.identificacionIngreso)) {
-      console.log('Ya existe');
+  async registrar(frmIngresoValue: any) {
+    const identificacion = this.frmIngreso.get('txtId')?.value;
+    if (this.estado == "Ingreso" && this.id == identificacion) {
+      Swal.fire(
+        'Registrar Ingreso',
+        'Ya hay un ingreso con esta identificacion.',
+        'warning'
+      );
     } else {
       if (this.frmIngreso.valid) {
         this.ingreso = {
@@ -41,16 +59,14 @@ export class IngresoComponent implements OnInit {
           fechaHoraSalida: null,
           estado: 'Ingreso',
         };
-        this.fechaIncial = new Date();
-        console.log(frmIngresoValue);
         this.IngresoService.registrar(this.ingreso).then(
           (resultado) => {
-            console.log(resultado);
             Swal.fire(
               'Registrar Ingreso',
               'Se ha resgistrado el ingreso correctamente.',
               'success'
             );
+            this.fechaIncial = new Date();
             this.frmIngreso.reset();
           },
           (error) => {
@@ -66,21 +82,6 @@ export class IngresoComponent implements OnInit {
     }
   }
 
-  consultar(identificacion: string) {
-    let existe: any;
-    this.IngresoService.obtenerIngreso(identificacion).get().then((value) => {
-      value.forEach(registro => {
-        if (registro.get('identificacion') == identificacion) {
-          existe = true
-        } else {
-          console.log('Registrando');
-          existe = false
-        }
-      })
-    })
-    return existe
-  }
-
   /**
    * consulta un ingreso
    * por identificacion
@@ -92,7 +93,12 @@ export class IngresoComponent implements OnInit {
         if (!resultado.empty) {
           resultado.forEach((ingreso) => {
             console.log(ingreso.id, "=>", ingreso.data());
+            // Asignar datos a las varibles que serviran para validar.
+            this.fechaIncial = ingreso.get("fechaHoraIngreso");
+            this.estado = ingreso.get("estado");
             this.idIngreso = ingreso.id
+            this.id = ingreso.get("identificacion");
+            // Rellenar formulario con los datos.
             this.frmIngreso.get('txtNombre')?.setValue(ingreso.get("nombre"));
             this.frmIngreso.get('cbTipo')?.setValue(ingreso.get("tipo"));
             this.frmIngreso.get('cbMarca')?.setValue(ingreso.get("marcaComputador"));
@@ -107,6 +113,7 @@ export class IngresoComponent implements OnInit {
       }
     )
   }
+
   /**
    * elimina el ingreso consultado
    */
@@ -138,43 +145,55 @@ export class IngresoComponent implements OnInit {
    * @param frmIngresoValue
    */
   modificar(frmIngresoValue: any) {
-    if (this.frmIngreso.valid && this.idIngreso) {
-      this.ingreso = {
-        _id: this.idIngreso,
-        identificacion: frmIngresoValue.txtId,
-        nombre: frmIngresoValue.txtNombre,
-        tipo: frmIngresoValue.cbTipo,
-        fechaHoraIngreso: this.fechaIncial,
-        marcaComputador: frmIngresoValue.cbMarca,
-        serialComputador: frmIngresoValue.txtSerial,
-        fechaHoraSalida: new Date(),
-        estado: 'Salida',
-      }
-      console.log(this.ingreso._id);
-      this.IngresoService.actualiar(this.ingreso)
+    const identificacion = this.frmIngreso.get('txtId')?.value;
+    if (this.estado == "Salida" && this.id == identificacion) {
       Swal.fire(
-        'Modificar Ingreso',
-        'Se ha modificado el ingreso correctamente.',
-        'success'
+        'Registrar salida',
+        'Ya hay una salida con esta identificacion. (Ingrese para poder salir :V )',
+        'warning'
       );
-      this.frmIngreso.reset();
     } else {
-      Swal.fire(
-        'Modificar Ingreso',
-        'Hay campos vacios en su formulario',
-        'error'
-      );
+      if (this.frmIngreso.valid) {
+        this.ingreso = {
+          _id: this.idIngreso,
+          identificacion: frmIngresoValue.txtId,
+          nombre: frmIngresoValue.txtNombre,
+          tipo: frmIngresoValue.cbTipo,
+          fechaHoraIngreso: this.fechaIncial, // Asignar la fecha original
+          marcaComputador: frmIngresoValue.cbMarca,
+          serialComputador: frmIngresoValue.txtSerial,
+          fechaHoraSalida: new Date(),
+          estado: 'Salida',
+        }
+        this.IngresoService.actualiar(this.ingreso)
+        Swal.fire(
+          'Registrar Salida',
+          'Se ha registrado la salida correctamente.',
+          'success'
+        );
+        this.frmIngreso.reset();
+      } else {
+        Swal.fire(
+          'Registro Salida',
+          'Primero consulte por Identificacion',
+          'error'
+        );
+
+      }
     }
   }
 
-  ingresar() {
-
-  }
-
+  /**
+   * limpia el fomrularrio
+   */
   limpiarIngreso() {
-    this.frmIngreso.reset
+    this.frmIngreso.reset();
   }
 
+/**
+ * inicializar y valida los campos
+ * el formulario
+ */
   ngOnInit(): void {
     this.frmIngreso = new FormGroup({
       txtId: new FormControl('', [
