@@ -23,6 +23,10 @@ export class IngresoService {
     return this.firestore.collection('ingresos').ref.where('identificacion', '==', identificacion);
   }
 
+  actualizarEstado(id :string, estado:string){
+    this.firestore.doc('ingresos/'+ id).update({estado:estado});
+  }
+
   //---[update]---
   actualiar(ingreso: Ingreso) {
     // delete ingreso._id;

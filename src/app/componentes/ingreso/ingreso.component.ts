@@ -14,7 +14,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 })
 export class IngresoComponent implements OnInit {
 
-  public frmIngreso!: FormGroup; 
+  public frmIngreso!: FormGroup;
   public ingreso!: Ingreso;
   public idIngreso!: string; // Variable para el id que se consulta
   public fechaIncial!: any; // Variable para la fecha inicial que se registra
@@ -41,11 +41,13 @@ export class IngresoComponent implements OnInit {
    */
   async registrar(frmIngresoValue: any) {
     const identificacion = this.frmIngreso.get('txtId')?.value;
-    if (this.estado == "Ingreso" && this.id == identificacion) {
+    console.log(await this.consultar(identificacion));
+    if (await this.consultar(identificacion) && this.estado === "Salida") {
+      this.IngresoService.actualizarEstado(this.idIngreso, "Ingreso");
       Swal.fire(
         'Registrar Ingreso',
-        'Ya hay un ingreso con esta identificacion.',
-        'warning'
+        'Se ha resgistrado el ingreso correctamente.',
+        'success'
       );
     } else {
       if (this.frmIngreso.valid) {
@@ -78,8 +80,26 @@ export class IngresoComponent implements OnInit {
             );
           }
         );
+      } else {
+        Swal.fire(
+          'Registrar Ingreso',
+          'Formulario Invalido',
+          'error'
+        );
       }
+
     }
+  }
+
+  async consultar(identificacion: string): Promise<boolean> {
+    const value = await this.IngresoService.obtenerIngreso(identificacion).get();
+    let existe = false;
+    value.forEach(registro => {
+      if (registro.get('identificacion') === identificacion) {
+        existe = true;
+      }
+    });
+    return existe;
   }
 
   /**
@@ -146,7 +166,7 @@ export class IngresoComponent implements OnInit {
    */
   modificar(frmIngresoValue: any) {
     const identificacion = this.frmIngreso.get('txtId')?.value;
-    if (this.estado == "Salida" && this.id == identificacion) {
+    if (this.id == identificacion && this.estado == "Salida") {
       Swal.fire(
         'Registrar salida',
         'Ya hay una salida con esta identificacion. (Ingrese para poder salir :V )',
@@ -190,26 +210,17 @@ export class IngresoComponent implements OnInit {
     this.frmIngreso.reset();
   }
 
-/**
- * inicializar y valida los campos
- * el formulario
- */
+  /**
+   * inicializar y valida los campos
+   * el formulario
+   */
   ngOnInit(): void {
     this.frmIngreso = new FormGroup({
-      txtId: new FormControl('', [
-        Validators.required,
-        Validators.maxLength(45),
-      ]),
-      txtNombre: new FormControl('', [
-        Validators.required,
-        Validators.maxLength(60),
-      ]),
+      txtId: new FormControl('', [Validators.required, Validators.maxLength(45),]),
+      txtNombre: new FormControl('', [Validators.required, Validators.maxLength(60),]),
       cbTipo: new FormControl('', [Validators.required]),
       cbMarca: new FormControl('', [Validators.required]),
-      txtSerial: new FormControl('', [
-        Validators.required,
-        Validators.maxLength(45),
-      ]),
+      txtSerial: new FormControl('', [Validators.required, Validators.maxLength(45),]),
     });
   }
 }
